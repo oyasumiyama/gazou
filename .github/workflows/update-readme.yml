@@ -1,0 +1,38 @@
+name: Update README with image thumbnails
+
+on:
+  push:
+    paths:
+      - '*.jpg'
+      - '*.png'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Generate README
+        run: |
+          echo "## 画像ギャラリー" > README.md
+          echo "" >> README.md
+          echo "このリポジトリに追加された画像ファイルは、以下にサムネイルとして表示されます。" >> README.md
+          echo "" >> README.md
+          for file in *.jpg *.png; do
+            [ -e "$file" ] || continue
+            echo "![${file}](./${file})" >> README.md
+          done
+          
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "README自動更新" || echo "No changes"
+          git push
